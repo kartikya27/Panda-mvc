@@ -1,0 +1,14 @@
+{
+    "name": "devil/panda",
+    "autoload": {
+        "psr-4": {
+            "panda\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kartik Mandothiya"
+        }
+    ],
+    "require": {}
+}

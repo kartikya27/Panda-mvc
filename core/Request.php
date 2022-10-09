@@ -2,7 +2,7 @@
 
 namespace panda\core;
 
-class Request
+class Request   
 {
     public function getPath()
     {

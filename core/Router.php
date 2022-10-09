@@ -14,10 +14,10 @@ class Router
     public Response $response;
     protected array $routes = [];
 
-    public function __construct(Request $request, Response $respones)
+    public function __construct(Request $request, Response $response)
     {
         $this->request = $request;
-        $this->Response = $respones;
+        $this->response = $response;
     }
 
     public function get($path, $callback)
@@ -34,28 +34,37 @@ class Router
     {
         $path = $this->request->getPath(); 
         $method = $this->request->getMethod();
-
+ 
         $callback = $this->routes[$method][$path] ?? false;
         if($callback === false)
         {
-            Application::$app->response->setStatusCode(404);
-            return "404 Error. Page Not Found";
+            $this->response->setStatusCode(404);
+            return $this->renderContent("404 Error. Page Not Found");
+            // return $this->renderContent("_404");
             exit;
         }
         if(is_string($callback))
         {
             return $this->renderView($callback);
         }
+        if(is_array($callback)){
+            $callback[0] = new $callback[0];
+        }
         return call_user_func($callback);
     }
     
-    public function renderView($view)
+    public function renderView($view, $params = [])
     {
         $layoutContent = $this->layoutContent();
-        $viewContent = $this->renderOnlyView($view);
+        $viewContent = $this->renderOnlyView($view, $params);
         return str_replace('{{page_content}}', $viewContent, $layoutContent);
-        // require_once Application::$FOLDER_PATH."/views/$view.theme.php";
+    }
 
+    // For render content on same url is page or view not found
+    public function renderContent($view)
+    {
+        $layoutContent = $this->layoutContent();
+        return str_replace('{{page_content}}', $view, $layoutContent);
     }
     
     protected function layoutContent()
@@ -65,8 +74,11 @@ class Router
         return ob_get_clean();
     }
 
-    protected function renderOnlyView($view)
+    protected function renderOnlyView($view, $params)
     {
+        foreach($params as $key => $value){
+            $$key = $value;
+        }
         ob_start();
         include_once Application::$FOLDER_PATH."/views/$view.theme.php";
         return ob_get_clean();
